@@ -1,8 +1,10 @@
 package redis_mq
 
 import (
+	"content_server/setting"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"time"
 )
 
 const (
@@ -12,12 +14,44 @@ const (
 	TEST_STREAM_KEY    = "TestStreamKey1"
 )
 
+var redisStreamMQClient *RedisStreamMQClient
+
 type RedisStreamMQClient struct {
-	//RedisConnOpt RedisConnOpt
 	ConnPool     *redis.Pool
 	StreamKey    string //stream对应的key值
 	GroupName    string //消费者组名称
 	ConsumerName string //消费者名称
+}
+
+func Setup() {
+	RedisConn := &redis.Pool{
+		MaxIdle:     setting.RedisSetting.MaxIdle,
+		MaxActive:   setting.RedisSetting.MaxActive,
+		IdleTimeout: setting.RedisSetting.IdleTimeout,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", setting.RedisSetting.Host)
+			if err != nil {
+				return nil, err
+			}
+			if setting.RedisSetting.Password != "" {
+				if _, err := c.Do("AUTH", setting.RedisSetting.Password); err != nil {
+					err := c.Close()
+					if err != nil {
+						return nil, err
+					}
+					return nil, err
+				}
+			}
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
+	redisStreamMQClient = &RedisStreamMQClient{
+		ConnPool: RedisConn,
+	}
 }
 
 // PutMsg 添加消息
@@ -69,7 +103,7 @@ func (mqClient *RedisStreamMQClient) ConvertVecInterface(vecReply []interface{})
 		var key = string(keyInfo[0].([]byte))
 		var idList = keyInfo[1].([]interface{})
 
-		//fmt.Println("StreamKey:", key)
+		fmt.Println("StreamKey:", key)
 		msgInfoMap := make(map[string][]string, 0)
 		for idIndex := 0; idIndex < len(idList); idIndex++ {
 			var idInfo = idList[idIndex].([]interface{})
