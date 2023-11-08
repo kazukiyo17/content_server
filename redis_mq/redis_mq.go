@@ -96,6 +96,7 @@ func (mqClient *RedisStreamMQClient) PutMsgBatch(streamKey string, msgMap map[st
 	return msgId, nil
 }
 
+// 返回map, key为string value为[]byte
 func (mqClient *RedisStreamMQClient) ConvertVecInterface(vecReply []interface{}) (msgMap map[string]map[string][]string) {
 	msgMap = make(map[string]map[string][]string, 0)
 	for keyIndex := 0; keyIndex < len(vecReply); keyIndex++ {
@@ -121,6 +122,28 @@ func (mqClient *RedisStreamMQClient) ConvertVecInterface(vecReply []interface{})
 			msgInfoMap[id] = vecMsg
 		}
 		msgMap[key] = msgInfoMap
+	}
+	return
+}
+
+// 返回map, key为string value为[]byte
+func (mqClient *RedisStreamMQClient) ConvertMap(vecReply []interface{}) (msgMap map[string][]byte) {
+	msgMap = make(map[string][]byte, 0)
+	for keyIndex := 0; keyIndex < len(vecReply); keyIndex++ {
+		var keyInfo = vecReply[keyIndex].([]interface{})
+		var key = string(keyInfo[0].([]byte))
+		var idList = keyInfo[1].([]interface{})
+
+		fmt.Println("StreamKey:", key)
+		for idIndex := 0; idIndex < len(idList); idIndex++ {
+			var idInfo = idList[idIndex].([]interface{})
+			var fieldList = idInfo[1].([]interface{})
+			for msgIndex := 0; msgIndex < len(fieldList); msgIndex = msgIndex + 2 {
+				var msgKey = string(fieldList[msgIndex].([]byte))
+				var msgVal = fieldList[msgIndex+1].([]byte)
+				msgMap[msgKey] = msgVal
+			}
+		}
 	}
 	return
 }
@@ -229,7 +252,7 @@ func (mqClient *RedisStreamMQClient) DestroyConsumerGroup(streamKey string, grou
 
 // GetMsgByGroupConsumer 组内消息分配操作，组内每个消费者消费多少消息
 func (mqClient *RedisStreamMQClient) GetMsgByGroupConsumer(streamKey string, groupName string,
-	consumerName string, msgAmount int32) (msgMap map[string]map[string][]string, err error) {
+	consumerName string, msgAmount int32) (msgMap map[string][]byte, err error) {
 	conn := mqClient.ConnPool.Get()
 	defer conn.Close()
 
@@ -242,8 +265,7 @@ func (mqClient *RedisStreamMQClient) GetMsgByGroupConsumer(streamKey string, gro
 	}
 
 	//返回消息转换
-	msgMap = mqClient.ConvertVecInterface(reply)
-	//fmt.Println("MsgMap:", msgMap)
+	msgMap = mqClient.ConvertMap(reply)
 	return msgMap, nil
 }
 

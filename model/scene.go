@@ -14,8 +14,8 @@ type SceneModelInterface interface {
 	GetSceneByParentSceneId(parentSceneId int) (scenes []Scene, err error)
 }
 
-func (s *Scene) GetSceneBySceneId(sceneId int) (scene Scene, err error) {
-	err = DB.Where("scene_id = ?", sceneId).First(&scene).Error
+func (s *Scene) GetSceneBySceneId() (scene *Scene, err error) {
+	err = DB.Where("scene_id = ?", s.SceneId).First(&scene).Error
 	return
 }
 

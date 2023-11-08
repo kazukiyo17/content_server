@@ -15,8 +15,14 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.782 h1:du/bh8RvkLIHjpmpXtOT0lhwhPUdiobmxr32Sv6xAtA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.782/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.785 h1:7zL50LUAt0AtEdBqEiePSuw0ETcDvn1pqMufXlNx7FY=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.785/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.786 h1:+wMySYZaNSWMvJaPY1V1aBK4+eIv1wXwu0rZh8SPzmg=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.786/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.782 h1:mKFYNiWCgde0snQZ91WYasBHokdgwmDwScDq5k95AB4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.782/go.mod h1:6jctvwQHQ6h+t85nqRtjp6PkrJwRep4P/uYnxaictq0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.786 h1:m7PmKiqNOApzyGGdDGJoJgM4psSh75orX4iPoO2GjVs=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.786/go.mod h1:Dd+/RsXFnoddD8Vg7PSq3S3885/Y09Nzy20uq01KypM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gorm.io/driver/mysql v1.5.2 h1:QC2HRskSE75wBuOxe0+iCkyJZ+RqpudsQtqkp+IMuXs=
