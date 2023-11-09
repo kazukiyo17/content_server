@@ -45,6 +45,13 @@ type Nlp struct {
 
 var NlpSetting = &Nlp{}
 
+type DashScope struct {
+	Url    string
+	ApiKey string
+}
+
+var DashScopeSetting = &DashScope{}
+
 func Setup() {
 	var err error
 	cfg, err = ini.Load("app.ini")
@@ -56,6 +63,7 @@ func Setup() {
 	mapTo("server", ServerSetting)
 	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisSetting)
+	mapTo("dash-scope", DashScopeSetting)
 
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
