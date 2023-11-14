@@ -38,12 +38,12 @@ type Redis struct {
 
 var RedisSetting = &Redis{}
 
-type Nlp struct {
+type TencentCloud struct {
 	SecretID  string
 	SecretKey string
 }
 
-var NlpSetting = &Nlp{}
+var TencentCloudSetting = &TencentCloud{}
 
 type DashScope struct {
 	Url    string
@@ -56,7 +56,7 @@ func Setup() {
 	var err error
 	cfg, err = ini.Load("app.ini")
 	if err != nil {
-		log.Fatalf("setting.Setup, fail to parse 'conf/app.ini': %v", err)
+		log.Fatalf("setting.Setup, fail to parse 'app.ini': %v", err)
 	}
 
 	//mapTo("app", AppSetting)
@@ -64,6 +64,7 @@ func Setup() {
 	mapTo("database", DatabaseSetting)
 	mapTo("redis", RedisSetting)
 	mapTo("dash-scope", DashScopeSetting)
+	mapTo("tencent-cloud", TencentCloudSetting)
 
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second

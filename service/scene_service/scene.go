@@ -3,7 +3,10 @@ package scene_service
 import (
 	"content_server/model"
 	"content_server/redis"
-	"content_server/utils/nlp"
+	"content_server/utils/aiart"
+	"content_server/utils/cos"
+	"content_server/utils/dashscope"
+	"content_server/utils/processor"
 	"encoding/json"
 )
 
@@ -13,6 +16,14 @@ type Scene struct {
 	CreatorId     int
 	CreateTime    int
 	ParentSceneId int
+	Chooses       []*Choose
+	Content       string
+}
+
+type Choose struct {
+	SceneId int
+	Content string
+	Key     string
 }
 
 // interface
@@ -73,11 +84,42 @@ func (s *Scene) GetSceneByParentSceneId() (scenes []*model.Scene, err error) {
 	return scenes, nil
 }
 
-func (s *Scene) GnerateSceneNLP() (err error) {
-	text := ""
-	res, err := nlp.nlpRequest(text)
-	if err != nil {
-		return err
-	}
+// GenerateScene 生成分支的剧本
+func (s *Scene) GenerateScene() (err error) {
+	// 分支
+	chooses := s.Chooses
+	for _, choose := range chooses {
+		// 生成分支的剧本
+		req := dashscope.NewTextGenerationRequest(choose.Content, s.Content)
+		response, err := req.GenerateText()
+		if err != nil {
+			return err
+		}
+		content := response.Text // 剧本元数据
+		// 后处理：1. 提取背景描述 2. 格式化剧本
+		bgDescList := processor.ExtractBgDesc(content)
+		// 生成并上传
+		imgUrls := []string{}
+		for _, bgDesc := range bgDescList {
+			if bgDesc == "" {
+				continue
+			}
+			imgBase54, err := aiart.Generate(bgDesc)
+			if err != nil {
+				return err
+			}
+			// 上传COS, 随机一个key
+			url, err := cos.UploadImage(imgBase54)
+			if err != nil {
+				return err
+			}
+			imgUrls = append(imgUrls, url)
+		}
+		newContent, err := processor.FormatSceneContent(content, imgUrls)
+		if err != nil {
+			return err
+		}
+		// 剧本上传COS
 
+	}
 }

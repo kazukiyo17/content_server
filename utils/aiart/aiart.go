@@ -1,32 +1,33 @@
-package nlp
+package aiart
 
 import (
 	"content_server/setting"
 	"fmt"
+	aiart "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart/v20221229"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions"
-	nlp "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp/v20190408"
 )
 
-func nlpRequest(text string) (resp string, err error) {
+func Generate(text string) (resp string, err error) {
 	credential := common.NewCredential(
-		setting.NlpSetting.SecretID,
-		setting.NlpSetting.SecretKey,
+		setting.TencentCloudSetting.SecretID,
+		setting.TencentCloudSetting.SecretKey,
 	)
 	// 实例化一个客户端配置对象，可以指定超时时间等配置
 	cpf := profile.NewClientProfile()
 	// 实例化要请求产品的client对象
-	client, _ := nlp.NewClient(credential, regions.Shanghai, cpf)
+	client, _ := aiart.NewClient(credential, regions.Shanghai, cpf)
 	// 实例化一个请求对象
-	request := nlp.NewTextWritingRequest()
-	request.Text = &text
-	request.SourceLang = common.StringPtr("zh")
-	request.Number = common.Int64Ptr(1)
-	request.Style = common.StringPtr("urban_officialdom")
+	request := aiart.NewTextToImageRequest()
+	request.Prompt = &text
+	request.Styles = []*string{common.StringPtr("301"), common.StringPtr("201")}
+	request.ResultConfig = &aiart.ResultConfig{
+		Resolution: common.StringPtr("768:1024"),
+	}
 	// 通过client对象调用想要访问的接口，需要传入请求对象
-	response, err := client.TextWriting(request)
+	response, err := client.TextToImage(request)
 	// 处理异常
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		fmt.Printf("An API error has returned: %s", err)
@@ -37,4 +38,14 @@ func nlpRequest(text string) (resp string, err error) {
 		panic(err)
 	}
 	return response.ToJsonString(), err
+}
+
+// 测试
+func Test() {
+	resp, err := generate("高大的中年男子，修剪整齐的短发，眼神深沉而狡猾，黑色西装，银框眼镜，优雅而又神秘。仅保留上半身，白色背景")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(resp)
 }
