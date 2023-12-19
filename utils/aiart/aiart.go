@@ -10,7 +10,7 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions"
 )
 
-func Generate(text string) (resp string, err error) {
+func Generate(text string) (base64Img string, err error) {
 	credential := common.NewCredential(
 		setting.TencentCloudSetting.SecretID,
 		setting.TencentCloudSetting.SecretKey,
@@ -24,7 +24,7 @@ func Generate(text string) (resp string, err error) {
 	request.Prompt = &text
 	request.Styles = []*string{common.StringPtr("301"), common.StringPtr("201")}
 	request.ResultConfig = &aiart.ResultConfig{
-		Resolution: common.StringPtr("768:1024"),
+		Resolution: common.StringPtr("1280:720"),
 	}
 	// 通过client对象调用想要访问的接口，需要传入请求对象
 	response, err := client.TextToImage(request)
@@ -35,17 +35,20 @@ func Generate(text string) (resp string, err error) {
 	}
 	// 非SDK异常，直接失败。实际代码中可以加入其他的处理。
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return response.ToJsonString(), err
+	return *response.Response.ResultImage, nil
 }
 
-// 测试
-func Test() {
-	resp, err := generate("高大的中年男子，修剪整齐的短发，眼神深沉而狡猾，黑色西装，银框眼镜，优雅而又神秘。仅保留上半身，白色背景")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(resp)
-}
+//
+//// 测试
+//func Test() {
+//	resp, err := Generate("(character design), a young man with short black hair and determined eyes," +
+//		"casual wear,backpack,hands behind his back, cartoonish lithographs, clean background, " +
+//		"super details,  --ar 3:4 --niji 5")
+//	if err != nil {
+//		fmt.Println(err)
+//		return
+//	}
+//	fmt.Println(resp)
+//}

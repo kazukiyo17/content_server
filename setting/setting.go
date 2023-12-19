@@ -18,12 +18,13 @@ type Server struct {
 var ServerSetting = &Server{}
 
 type Database struct {
-	Type     string
-	User     string
-	Password string
-	Host     string
-	Port     string
-	Name     string
+	Type        string
+	User        string
+	Password    string
+	Host        string
+	Port        string
+	Name        string
+	TablePrefix string
 }
 
 var DatabaseSetting = &Database{}
@@ -37,6 +38,16 @@ type Redis struct {
 }
 
 var RedisSetting = &Redis{}
+
+type RedisMQ struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
+var RedisMQSetting = &RedisMQ{}
 
 type TencentCloud struct {
 	SecretID  string
@@ -65,6 +76,7 @@ func Setup() {
 	mapTo("redis", RedisSetting)
 	mapTo("dash-scope", DashScopeSetting)
 	mapTo("tencent-cloud", TencentCloudSetting)
+	mapTo("redis-mq", RedisMQSetting)
 
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second

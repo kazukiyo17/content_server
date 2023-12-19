@@ -10,11 +10,12 @@ import (
 const (
 	STREAM_MQ_MAX_LEN  = 500000 //消息队列最大长度
 	READ_MSG_AMOUNT    = 1000   //每次读取消息的条数
-	READ_MSG_BLOCK_SEC = 30     //阻塞读取消息时间
 	TEST_STREAM_KEY    = "TestStreamKey1"
+	TEST_GROUP_NAME    = "TestGroupName1"
+	TEST_CONSUMER_NAME = "TestConsumerName1"
 )
 
-var redisStreamMQClient *RedisStreamMQClient
+var redisMQClient *RedisStreamMQClient
 
 type RedisStreamMQClient struct {
 	ConnPool     *redis.Pool
@@ -25,16 +26,16 @@ type RedisStreamMQClient struct {
 
 func Setup() {
 	RedisConn := &redis.Pool{
-		MaxIdle:     setting.RedisSetting.MaxIdle,
-		MaxActive:   setting.RedisSetting.MaxActive,
-		IdleTimeout: setting.RedisSetting.IdleTimeout,
+		MaxIdle:     setting.RedisMQSetting.MaxIdle,
+		MaxActive:   setting.RedisMQSetting.MaxActive,
+		IdleTimeout: setting.RedisMQSetting.IdleTimeout,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", setting.RedisSetting.Host)
+			c, err := redis.Dial("tcp", setting.RedisMQSetting.Host)
 			if err != nil {
 				return nil, err
 			}
-			if setting.RedisSetting.Password != "" {
-				if _, err := c.Do("AUTH", setting.RedisSetting.Password); err != nil {
+			if setting.RedisMQSetting.Password != "" {
+				if _, err := c.Do("AUTH", setting.RedisMQSetting.Password); err != nil {
 					err := c.Close()
 					if err != nil {
 						return nil, err
@@ -49,7 +50,7 @@ func Setup() {
 			return err
 		},
 	}
-	redisStreamMQClient = &RedisStreamMQClient{
+	redisMQClient = &RedisStreamMQClient{
 		ConnPool: RedisConn,
 	}
 }
@@ -127,8 +128,8 @@ func (mqClient *RedisStreamMQClient) ConvertVecInterface(vecReply []interface{})
 }
 
 // 返回map, key为string value为[]byte
-func (mqClient *RedisStreamMQClient) ConvertMap(vecReply []interface{}) (msgMap map[string][]byte) {
-	msgMap = make(map[string][]byte, 0)
+func (mqClient *RedisStreamMQClient) ConvertMap(vecReply []interface{}) (msgMap map[string]string) {
+	msgMap = make(map[string]string, 0)
 	for keyIndex := 0; keyIndex < len(vecReply); keyIndex++ {
 		var keyInfo = vecReply[keyIndex].([]interface{})
 		var key = string(keyInfo[0].([]byte))
@@ -141,11 +142,12 @@ func (mqClient *RedisStreamMQClient) ConvertMap(vecReply []interface{}) (msgMap 
 			for msgIndex := 0; msgIndex < len(fieldList); msgIndex = msgIndex + 2 {
 				var msgKey = string(fieldList[msgIndex].([]byte))
 				var msgVal = fieldList[msgIndex+1].([]byte)
-				msgMap[msgKey] = msgVal
+				// msgVal为[]byte类型，需要转换成 string
+				msgMap[msgKey] = string(msgVal)
 			}
 		}
 	}
-	return
+	return msgMap
 }
 
 // GetMsgBlock 阻塞方式读取消息
@@ -252,13 +254,13 @@ func (mqClient *RedisStreamMQClient) DestroyConsumerGroup(streamKey string, grou
 
 // GetMsgByGroupConsumer 组内消息分配操作，组内每个消费者消费多少消息
 func (mqClient *RedisStreamMQClient) GetMsgByGroupConsumer(streamKey string, groupName string,
-	consumerName string, msgAmount int32) (msgMap map[string][]byte, err error) {
+	consumerName string) (msgMap map[string]string, err error) {
 	conn := mqClient.ConnPool.Get()
 	defer conn.Close()
 
 	//>代表当前消费者还没读取的消息
 	reply, err := redis.Values(conn.Do("XREADGROUP",
-		"GROUP", groupName, consumerName, "COUNT", msgAmount, "STREAMS", streamKey, ">"))
+		"GROUP", groupName, consumerName, "COUNT", READ_MSG_AMOUNT, "BLOCK", 10000, "STREAMS", streamKey, ">"))
 	if err != nil && err != redis.ErrNil {
 		fmt.Println("XREADGROUP failed, err: ", err)
 		return nil, err

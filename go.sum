@@ -33,6 +33,8 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.788 h1:xjoHsMQUVcP7tgt0fawmw1fB1AP/nhJcecis6nVOFC4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.788/go.mod h1:ksWeYriGypzzXdfB8O3Slnx1gd9DQB3stn629osnVKk=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.796 h1:KWelQihynwv1N5eaP75+2MQ30izFtBlN+TgwcyYP/Gs=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.796/go.mod h1:QhrO5H1t/zMnw8X89NW0S4NktmResm55k8FdxNNOzJ4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.563/go.mod h1:7sCQWVkxcsR38nffDW057DRGk8mUjK1Ing/EFOK8s8Y=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.782 h1:du/bh8RvkLIHjpmpXtOT0lhwhPUdiobmxr32Sv6xAtA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.782/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
@@ -42,6 +44,8 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.786 h1:+wMy
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.786/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.788 h1:H3OCwvAHQSgphJNjAM6JhlKT1x83WF4uu6qahWTR1dE=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.788/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.796 h1:D93XmrQLpKQfIykZRAVSWiHIO5VrowBJWkNqHjtdh70=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.796/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.563/go.mod h1:uom4Nvi9W+Qkom0exYiJ9VWJjXwyxtPYTkKkaLMlfE0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.782 h1:mKFYNiWCgde0snQZ91WYasBHokdgwmDwScDq5k95AB4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.782/go.mod h1:6jctvwQHQ6h+t85nqRtjp6PkrJwRep4P/uYnxaictq0=

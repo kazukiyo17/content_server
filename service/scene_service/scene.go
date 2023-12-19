@@ -1,125 +1,143 @@
 package scene_service
 
 import (
-	"content_server/model"
+	"content_server/model/scene"
 	"content_server/redis"
-	"content_server/utils/aiart"
 	"content_server/utils/cos"
 	"content_server/utils/dashscope"
 	"content_server/utils/processor"
-	"encoding/json"
+	"strconv"
+	"strings"
 )
 
-type Scene struct {
-	SceneId       int
-	Prompt        string
-	CreatorId     int
-	CreateTime    int
-	ParentSceneId int
-	Chooses       []*Choose
-	Content       string
+func GetChooseContentBySceneId(sceneId string) (chooseContent string, err error) {
+	key := "choose:" + sceneId
+	chooseContent = ""
+	if redis.Exists(key) {
+		chooseContent, err = redis.Get(key)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		chooseContent, err = scene.GetChooseContentBySceneId(sceneId)
+		if err != nil {
+			return "", err
+		}
+		err = redis.Set(key, chooseContent)
+	}
+	return chooseContent, nil
 }
 
-type Choose struct {
-	SceneId int
-	Content string
-	Key     string
+func GetSceneContentBySceneId(sceneId int64) (sceneContent string, err error) {
+	key := "scene:" + strconv.FormatInt(sceneId, 10)
+	if redis.Exists(key) {
+		sceneContentBytes, err := redis.Get(key)
+		if err != nil {
+			return "", err
+		}
+		sceneContent = string(sceneContentBytes)
+		return sceneContent, nil
+	}
+	sceneContent = cos.GetSceneContent(sceneId)
+	return sceneContent, nil
 }
 
-// interface
-type SceneServiceInterface interface {
-	GetSceneBySceneId() (scene *model.Scene, err error)
-	GetSceneByParentSceneId() (scenes []*model.Scene, err error)
-	GetRedisKeyBySceneId() (redisKey string)
-	// 调用NLP接口
-	GnerateSceneNLP() (err error)
+func GetDescBySceneId(sceneId string) (desc string, err error) {
+	key := "desc:" + sceneId
+	if redis.Exists(key) {
+		desc, err = redis.Get(key)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		desc, err = scene.GetDescBySceneId(sceneId)
+		if err != nil {
+			return "", err
+		}
+		err = redis.Set(key, desc)
+	}
+	return desc, nil
 }
 
-func (s *Scene) GetSceneBySceneId() (scene *model.Scene, err error) {
-	var cacheScene *model.Scene
-	// 1. Redis中读取
-	redisKey := s.GetRedisKeyBySceneId()
-	if redis.Exists(redisKey) {
-		// 1.1 Redis中存在，直接返回
-		data, err := redis.Get(redisKey)
+func GenerateScene(chooseId string, sceneId string) {
+	chooseIdInt, err := strconv.ParseInt(chooseId, 10, 64)
+	if err != nil {
+		return
+	}
+	_, err = strconv.ParseInt(sceneId, 10, 64)
+	if err != nil {
+		return
+	}
+	// 1. 根据k取Choose文本内容
+	chooseContent, err := GetChooseContentBySceneId(chooseId)
+	if err != nil {
+		return
+	}
+	// 2. 根据v取剧本简述
+	sceneDesc, err := GetDescBySceneId(sceneId)
+	if err != nil {
+		return
+	}
+	// 3.1 生成新剧本简述
+	descReq := dashscope.NewDescGenerationRequest(chooseContent, sceneDesc)
+	rawDesc, err := descReq.GenerateText()
+	if err != nil {
+		return
+	}
+	// 3.2 生成新剧本
+	// rawDesc 如果分行了，去掉为空的行，取第一行
+	//rawDesc = strings.Split(rawDesc, "\n")[0]
+	req := dashscope.NewTextGenerationRequest(rawDesc)
+	rawText, err := req.GenerateText()
+	if err != nil {
+		return
+	}
+	// 4. 解析
+	newSceneContent, chooses, err := processor.GenerateSceneContent(rawText, chooseId)
+	if err != nil {
+		return
+	}
+	// 4. 上传cos
+	cosUrl, err := cos.UploadScene(newSceneContent, chooseId)
+	if err != nil {
+		return
+	}
+	// 5. 更新数据库: CreatorId CreateTime COSKey COSUrl
+	newScene := &scene.ModelScene{
+		//SceneId:       chooseIdInt,
+		//CreatorId:     0,
+		//ParentSceneId: sceneIdInt,
+		COSUrl:    cosUrl,
+		ShortDesc: rawDesc,
+	}
+	err = scene.UpdateSceneBySceneId(chooseId, newScene)
+	// 6. 写入redis
+	childSceneIds := make([]string, 0)
+	for k, v := range chooses {
+		// k 转 int64
+		kInt, _ := strconv.ParseInt(k, 10, 64)
+		newChildScene := &scene.ModelScene{
+			SceneId:       kInt,
+			CreatorId:     0,
+			ParentSceneId: chooseIdInt,
+			ChooseContent: v[1],
+		}
+		err = scene.SaveScene(newChildScene)
+		if err != nil {
+			continue
+		}
+		childSceneIds = append(childSceneIds, k)
+		err := redis.Set("choose:"+k, v[1])
 		if err != nil {
 			return
-		} else {
-			err := json.Unmarshal(data, &cacheScene)
-			if err != nil {
-				return nil, err
-			}
-			return cacheScene, nil
 		}
 	}
-	// 2. Redis中不存在，从MySQL中读取
-	scene = &model.Scene{SceneId: s.SceneId}
-	scene, err = scene.GetSceneBySceneId()
+	err = redis.Set("child:"+chooseId, strings.Join(childSceneIds, ","))
+	err = redis.Set("scene:"+chooseId, newSceneContent)
+	err = redis.Set("cos:"+chooseId, cosUrl)
+	err = redis.Set("desc:"+chooseId, rawDesc)
 	if err != nil {
-		return nil, err
+		return
 	}
-	// 3. 将MySQL中读取的数据写入Redis
-	data, err := json.Marshal(scene)
-	if err != nil {
-		return nil, err
-	}
-	err = redis.Set(redisKey, data, 3600)
-	if err != nil {
-		return nil, err
-	}
-	return scene, nil
-}
 
-func (s *Scene) GetRedisKeyBySceneId() (redisKey string) {
-	redisKey = "scene:" + string(rune(s.SceneId))
-	return redisKey
-}
-
-func (s *Scene) GetSceneByParentSceneId() (scenes []*model.Scene, err error) {
-	scene := &model.Scene{ParentSceneId: s.ParentSceneId}
-	scenes, err = scene.GetSceneByParentSceneId()
-	if err != nil {
-		return nil, err
-	}
-	return scenes, nil
-}
-
-// GenerateScene 生成分支的剧本
-func (s *Scene) GenerateScene() (err error) {
-	// 分支
-	chooses := s.Chooses
-	for _, choose := range chooses {
-		// 生成分支的剧本
-		req := dashscope.NewTextGenerationRequest(choose.Content, s.Content)
-		response, err := req.GenerateText()
-		if err != nil {
-			return err
-		}
-		content := response.Text // 剧本元数据
-		// 后处理：1. 提取背景描述 2. 格式化剧本
-		bgDescList := processor.ExtractBgDesc(content)
-		// 生成并上传
-		imgUrls := []string{}
-		for _, bgDesc := range bgDescList {
-			if bgDesc == "" {
-				continue
-			}
-			imgBase54, err := aiart.Generate(bgDesc)
-			if err != nil {
-				return err
-			}
-			// 上传COS, 随机一个key
-			url, err := cos.UploadImage(imgBase54)
-			if err != nil {
-				return err
-			}
-			imgUrls = append(imgUrls, url)
-		}
-		newContent, err := processor.FormatSceneContent(content, imgUrls)
-		if err != nil {
-			return err
-		}
-		// 剧本上传COS
-
-	}
 }

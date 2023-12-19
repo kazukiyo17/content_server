@@ -2,7 +2,6 @@ package redis
 
 import (
 	"content_server/setting"
-	"encoding/json"
 	"github.com/gomodule/redigo/redis"
 	"time"
 )
@@ -37,21 +36,16 @@ func Setup() error {
 }
 
 // Set a key/value
-func Set(key string, data interface{}, time int) error {
+func Set(key string, data string) error {
 	conn := RedisConn.Get()
 	defer conn.Close()
 
-	value, err := json.Marshal(data)
+	_, err := conn.Do("SET", key, data)
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.Do("SET", key, value)
-	if err != nil {
-		return err
-	}
-
-	_, err = conn.Do("EXPIRE", key, time)
+	_, err = conn.Do("EXPIRE", key, 24*60*60)
 	if err != nil {
 		return err
 	}
@@ -73,16 +67,16 @@ func Exists(key string) bool {
 }
 
 // Get get a key
-func Get(key string) ([]byte, error) {
+func Get(key string) (string, error) {
 	conn := RedisConn.Get()
 	defer conn.Close()
 
 	reply, err := redis.Bytes(conn.Do("GET", key))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return reply, nil
+	return string(reply), nil
 }
 
 // Delete delete a kye

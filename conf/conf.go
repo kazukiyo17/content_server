@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"content_server/redis_mq"
 	"content_server/setting"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
@@ -24,7 +23,7 @@ type Config struct {
 	RedisConn *redis.Pool // redis实例
 	NlpConn   *nlp.Client
 	//RedisMQConn  *redis.Pool
-	RedisMQConn *redis_mq.RedisStreamMQClient
+	//RedisMQConn *redis_mq.RedisStreamMQClient
 	//RedisConnMap   map[string]redis.Pool // redis实例
 }
 
@@ -44,11 +43,11 @@ func Load() {
 			panic("failed to loadRedis")
 		}
 
-		err = cfg.loadRedisMQ()
-		if err != nil {
-			//logger.Errorf(errcode.RedisFailError, "loadRedis err: %v", err)
-			panic("failed to loadRedis")
-		}
+		//err = cfg.loadRedisMQ()
+		//if err != nil {
+		//	//logger.Errorf(errcode.RedisFailError, "loadRedis err: %v", err)
+		//	panic("failed to loadRedis")
+		//}
 
 		C = cfg
 	})
@@ -94,27 +93,27 @@ func (c *Config) loadRedis() error {
 	return nil
 }
 
-func (c *Config) loadRedisMQ() error {
-	redisConn := &redis.Pool{
-		MaxIdle:     setting.RedisSetting.MaxIdle,
-		MaxActive:   setting.RedisSetting.MaxActive,
-		IdleTimeout: setting.RedisSetting.IdleTimeout,
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", setting.RedisSetting.Host)
-			if err != nil {
-				return nil, err
-			}
-			if setting.RedisSetting.Password != "" {
-				if _, err := c.Do("AUTH", setting.RedisSetting.Password); err != nil {
-					c.Close()
-					return nil, err
-				}
-			}
-			return c, err
-		},
-	}
-	c.RedisMQConn = &redis_mq.RedisStreamMQClient{
-		ConnPool: redisConn,
-	}
-	return nil
-}
+//func (c *Config) loadRedisMQ() error {
+//	redisConn := &redis.Pool{
+//		MaxIdle:     setting.RedisSetting.MaxIdle,
+//		MaxActive:   setting.RedisSetting.MaxActive,
+//		IdleTimeout: setting.RedisSetting.IdleTimeout,
+//		Dial: func() (redis.Conn, error) {
+//			c, err := redis.Dial("tcp", setting.RedisSetting.Host)
+//			if err != nil {
+//				return nil, err
+//			}
+//			if setting.RedisSetting.Password != "" {
+//				if _, err := c.Do("AUTH", setting.RedisSetting.Password); err != nil {
+//					c.Close()
+//					return nil, err
+//				}
+//			}
+//			return c, err
+//		},
+//	}
+//	c.RedisMQConn = &redis_mq.RedisStreamMQClient{
+//		ConnPool: redisConn,
+//	}
+//	return nil
+//}

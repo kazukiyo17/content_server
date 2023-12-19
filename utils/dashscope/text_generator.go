@@ -12,7 +12,6 @@ import (
 type TextGenerationRequest struct {
 	Model string `json:"model"`
 	Input Input  `json:"input"`
-	//Parameters Parameters `json:"parameters"`
 }
 
 // TextGenerationResponse 生成文本的响应参数
@@ -41,7 +40,7 @@ type TextGenerator interface {
 }
 
 // GenerateText 调用接口生成文本
-func (t *TextGenerationRequest) GenerateText() (response TextGenerationResponse, err error) {
+func (t *TextGenerationRequest) GenerateText() (text string, err error) {
 	url := setting.DashScopeSetting.Url
 	apiKey := setting.DashScopeSetting.ApiKey
 	// 构造body
@@ -75,20 +74,17 @@ func (t *TextGenerationRequest) GenerateText() (response TextGenerationResponse,
 	if respData["code"] != nil {
 		err = fmt.Errorf("code: %s, message: %s", respData["code"], respData["message"])
 		fmt.Printf("An API error has returned: %s", err)
-		return
+		return "", err
 	}
-	response.Text = respData["output"].(map[string]interface{})["text"].(string)
-	response.FinishReason = respData["output"].(map[string]interface{})["finish_reason"].(string)
-	if err != nil {
-		return
-	}
-	return
+	// 如果没出错
+	text = respData["output"].(map[string]interface{})["text"].(string)
+	return text, err
 }
 
-func NewTextGenerationRequest(choose string, content string) (req TextGenerationRequest) {
-	prompt := fmt.Sprintf("我在以下剧情中选择了[%s]，续写角色对话，不要剧情描述，只要角色对话，changeBg为场景描述(如村间小路，"+
-		"不要出现角色名)，最后给出三个分支choose，用|分隔，不少于500字。角色有赵卓群（诡异男子），周远山（反派富商），林秀芝（村民女孩），"+
-		"陈大志（村长）。剧本如下：%s", choose, content)
+func NewTextGenerationRequest(desc string) (req TextGenerationRequest) {
+	// desc 如果分行了，则
+	prompt := fmt.Sprintf("将以下剧情改写为角色对话，不少于1000字，首先给出changeBg场景描述，接着写出角色对话，不需要角色对话以"+
+		"外的内容，最后choose给出三个分支选项。剧情：%s", desc)
 	req = TextGenerationRequest{
 		Input: Input{
 			Prompt: prompt,
@@ -97,16 +93,13 @@ func NewTextGenerationRequest(choose string, content string) (req TextGeneration
 	return req
 }
 
-// Test 测试
-func Test() {
-	request := TextGenerationRequest{
+func NewDescGenerationRequest(choose string, content string) (req TextGenerationRequest) {
+	prompt := fmt.Sprintf("在以下剧情中我选择了“%s”，续写一段剧情简述，约200字，主角是“我”，配角有有赵卓群（诡异男子），"+
+		"周远山（反派富商），林秀芝（村民女孩），陈大志（村长）。剧情：%s", choose, content)
+	req = TextGenerationRequest{
 		Input: Input{
-			Prompt: "我在以下剧情中选择了[跟着林秀芝]，续写角色对话，不要剧情描述，只要角色对话，changeBg为风景描述(如村间小路，不要出现角色名)，最后给出三个分支choose，用|分隔，不少于500字。角色有赵卓群（诡异男子），周远山（反派富商），林秀芝（村民女孩），陈大志（村长）。剧本如下：changeBg: 一个静谧的小山村，空气清新，景色宜人。\\n 清晨的阳光照射进小镇的街道，我正在探寻这个地方。\\n此时一个小女孩蹦蹦跳跳地走在前方\\n我:小朋友，请问这里是不是有一座寺庙？\\n林秀芝:我叫林秀芝，大哥哥你想去哪里？\\n我:我想去拍那座寺庙的照片。\\n林秀芝:那座寺庙？\\n林秀芝不语，盯着我看了足足一分钟\\n随后女孩诡异地笑了\\n林秀芝:秀芝不知道哦\\nchoose:独自向前探索|跟着林秀芝|到村庄里寻找其他人",
+			Prompt: prompt,
 		},
 	}
-	response, err := request.GenerateText()
-	if err != nil {
-		return
-	}
-	println(response.Text)
+	return req
 }

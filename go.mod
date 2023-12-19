@@ -13,8 +13,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mozillazg/go-httpheader v0.4.0 // indirect
 	github.com/sony/sonyflake v1.2.0 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.788 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.788 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/aiart v1.0.796 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.796 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/nlp v1.0.786 // indirect
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.45 // indirect
 	gorm.io/driver/mysql v1.5.2 // indirect
