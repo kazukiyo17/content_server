@@ -1,6 +1,6 @@
 module content_server
 
-go 1.21.3
+go 1.19
 
 require (
 	github.com/clbanning/mxj v1.8.4 // indirect
