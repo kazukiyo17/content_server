@@ -28,10 +28,10 @@ COPY . .
 RUN go build .
 
 # 指定新的运行环境，最终的运行会基于这个坏境，使得最终的镜像非常小
-FROM scratch as deploy
+#FROM scratch as deploy
 
 # 把编译环境中打包好的可执行文件和配置文件拷贝到当前镜像
 #COPY --from=build /build/app/ /
 #COPY --from=build /build/conf ./conf
 EXPOSE 8000
-CMD ["/content_server"]
+CMD ["./content_server"]
