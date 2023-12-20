@@ -2,11 +2,11 @@
 FROM golang:latest as build
 
 # 指定go的环境变量
-ENV GOPROXY https://goproxy.cn,direct
-#    GO111MODULE=on \
-#    CGO_ENABLED=0 \
-#    GOOS=linux \
-#    GOARCH=amd64
+ENV GOPROXY=https://goproxy.cn \
+    GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
 
 #ENV GOPROXY https://goproxy.cn,direct
 WORKDIR $GOPATH/src/content_server
