@@ -151,20 +151,20 @@ func (mqClient *RedisStreamMQClient) ConvertMap(vecReply []interface{}) (msgMap 
 }
 
 // GetMsgBlock 阻塞方式读取消息
-func (mqClient *RedisStreamMQClient) GetMsgBlock(blockSec int32, msgAmount int32, streamKey string) (
-	msgMap map[string]map[string][]string, err error) {
+func (mqClient *RedisStreamMQClient) GetMsgBlock(streamKey string) ( msgMap map[string]string, err error) {
 	conn := mqClient.ConnPool.Get()
 	defer conn.Close()
 	//在阻塞模式中，可以使用$，表示最新的消息ID（在非阻塞模式下$无意义）
 	reply, err := redis.Values(conn.Do("XREAD",
-		"COUNT", msgAmount, "BLOCK", blockSec*1000, "STREAMS", streamKey, "$"))
+		"COUNT", 5, "BLOCK", 10*1000, "STREAMS", streamKey, "$"))
 	if err != nil && err != redis.ErrNil {
 		fmt.Println("BLOCK XREAD failed, err: ", err)
 		return nil, err
 	}
 
 	//返回消息转换
-	msgMap = mqClient.ConvertVecInterface(reply)
+	//msgMap = mqClient.ConvertVecInterface(reply)
+	msgMap = mqClient.ConvertMap(reply)
 	fmt.Println("MsgMap:", msgMap)
 	return msgMap, nil
 }
