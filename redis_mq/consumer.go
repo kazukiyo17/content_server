@@ -2,11 +2,8 @@ package redis_mq
 
 import "C"
 import (
-	"content_server/model/scene"
-	"content_server/redis"
-	"content_server/service/scene_service"
+	service "content_server/service/scene"
 	"fmt"
-	"strconv"
 )
 
 type SceneMsgConsumer struct {
@@ -27,33 +24,33 @@ func Consume() {
 			continue
 		}
 		for k, v := range msg {
-			kInt, err := strconv.ParseInt(k, 10, 64)
-			if err != nil {
-				continue
-			}
-			if hasGenerated(kInt) {
-				continue
-			}
-			scene_service.GenerateScene(k, v)
+			//kInt, err := strconv.ParseInt(k, 10, 64)
+			//if err != nil {
+			//	continue
+			//}
+			//if hasGenerated(kInt) {
+			//	continue
+			//}
+			service.GenerateScene(k, v)
 		}
 	}
 }
 
-func hasGenerated(sceneId int64) bool {
-	// 1 查询redis
-	rKey := "cos:" + strconv.FormatInt(sceneId, 10)
-	if redis.Exists(rKey) {
-		return true
-	}
-	// 2 查询db
-	cosUrl, err := scene.GetCosUrlBySceneId(sceneId)
-	if err != nil {
-		return false
-	}
-	if cosUrl == "" {
-		return false
-	}
-	// 2. 存入redis
-	err = redis.Set(rKey, cosUrl)
-	return true
-}
+//func hasGenerated(sceneId int64) bool {
+//	// 1 查询redis
+//	rKey := "cos:" + strconv.FormatInt(sceneId, 10)
+//	if redis.Exists(rKey) {
+//		return true
+//	}
+//	// 2 查询db
+//	cosUrl, err := model.GetCosUrlBySceneId(sceneId)
+//	if err != nil {
+//		return false
+//	}
+//	if cosUrl == "" {
+//		return false
+//	}
+//	// 2. 存入redis
+//	redis.Set(rKey, cosUrl)
+//	return true
+//}

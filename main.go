@@ -6,6 +6,7 @@ import (
 	"content_server/redis_mq"
 	"content_server/setting"
 	"content_server/utils/cos"
+	"content_server/utils/flake"
 )
 
 func init() {
@@ -15,6 +16,7 @@ func init() {
 	redis.Setup()
 	model.Setup()
 	cos.Setup()
+	flake.Setup()
 }
 
 func main() {

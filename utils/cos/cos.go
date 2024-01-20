@@ -63,20 +63,20 @@ func UploadScene(content string, key string) (cosUrl string, err error) {
 }
 
 // UploadImage 将base64编码的图片上传到cos
-func UploadImage(base64Str string) (url string, key string, err error) {
-	//client := newClient()
-	// 生成随机key
-	key, err = generateKey()
-	if err != nil {
-		panic(err)
-		return "", key, nil
-	}
+func UploadImage(base64Str string, bgId int64) (url string, err error) {
+	////client := newClient()
+	//// 生成随机key
+	//key, err = generateKey()
+	//if err != nil {
+	//	panic(err)
+	//	return "", key, nil
+	//}
 	// content 为 base64 编码的图片
 	data, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
 		panic(err)
 	}
-	name := "image/" + key + ".jpg"
+	name := "image/" + strconv.FormatInt(bgId, 10) + ".jpg"
 	// 上传字节流
 	f := strings.NewReader(string(data))
 	_, err = client.Object.Put(context.Background(), name, f, nil)
@@ -85,7 +85,7 @@ func UploadImage(base64Str string) (url string, key string, err error) {
 	}
 	// 获取图片URL
 	imgUrl := GetObjectUrl(name)
-	return imgUrl.String(), key, nil
+	return imgUrl.String(), nil
 }
 
 // GetSceneContent 下载cos中的文件
@@ -143,7 +143,8 @@ func GenerateSceneCosPath() (string, string, error) {
 		panic(err)
 		return "", "", err
 	}
-	u := "https://fake-buddha-1300084664.cos.ap-shanghai.myqcloud.com/scene/" + key + ".txt"
+	//u := "https://fake-buddha-1300084664.cos.ap-shanghai.myqcloud.com/scene/" + key + ".txt"
+	u := "/api/v1/game/scene?sceneId=" + key
 	return key, u, nil
 }
 

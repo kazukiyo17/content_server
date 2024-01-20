@@ -3,6 +3,7 @@ package redis
 import (
 	"content_server/setting"
 	"github.com/gomodule/redigo/redis"
+	"log"
 	"time"
 )
 
@@ -36,21 +37,20 @@ func Setup() error {
 }
 
 // Set a key/value
-func Set(key string, data string) error {
+func Set(key string, data string, expire int) {
 	conn := RedisConn.Get()
 	defer conn.Close()
-
 	_, err := conn.Do("SET", key, data)
 	if err != nil {
-		return err
+		log.Printf("redis set error: %v", err)
+		return
 	}
-
-	_, err = conn.Do("EXPIRE", key, 24*60*60)
+	// expire 以天为单位
+	_, err = conn.Do("EXPIRE", key, expire*24*3600)
 	if err != nil {
-		return err
+		log.Printf("redis set expire error: %v", err)
+		return
 	}
-
-	return nil
 }
 
 // Exists check a key

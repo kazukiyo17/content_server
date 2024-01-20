@@ -49,5 +49,5 @@ WORKDIR $GOPATH/src/content_server
 COPY . $GOPATH/src/content_server
 RUN go build .
 
-EXPOSE 8000
+EXPOSE 8081
 ENTRYPOINT ["./content_server"]

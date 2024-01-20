@@ -45,7 +45,7 @@ func (t *TextGenerationRequest) GenerateText() (text string, err error) {
 	apiKey := setting.DashScopeSetting.ApiKey
 	// 构造body
 	bytesData, _ := json.Marshal(TextGenerationRequest{
-		Model: "qwen-turbo",
+		Model: "qwen-max",
 		Input: Input{
 			Prompt: t.Input.Prompt,
 		},
@@ -83,8 +83,7 @@ func (t *TextGenerationRequest) GenerateText() (text string, err error) {
 
 func NewTextGenerationRequest(desc string) (req TextGenerationRequest) {
 	// desc 如果分行了，则
-	prompt := fmt.Sprintf("将以下剧情改写为角色对话，不少于1000字，首先给出changeBg场景描述，接着写出角色对话，不需要角色对话以"+
-		"外的内容，最后choose给出三个分支选项。剧情：%s", desc)
+	prompt := fmt.Sprintf("将以下剧情改写为对话形式，不少于1000字，剧情：%s", desc)
 	req = TextGenerationRequest{
 		Input: Input{
 			Prompt: prompt,
@@ -96,6 +95,26 @@ func NewTextGenerationRequest(desc string) (req TextGenerationRequest) {
 func NewDescGenerationRequest(choose string, content string) (req TextGenerationRequest) {
 	prompt := fmt.Sprintf("在以下剧情中我选择了“%s”，续写一段剧情简述，约200字，主角是“我”，配角有有赵卓群（诡异男子），"+
 		"周远山（反派富商），林秀芝（村民女孩），陈大志（村长）。剧情：%s", choose, content)
+	req = TextGenerationRequest{
+		Input: Input{
+			Prompt: prompt,
+		},
+	}
+	return req
+}
+
+func NewChooseGenerationRequest(desc string) (req TextGenerationRequest) {
+	prompt := fmt.Sprintf("为以下剧情生成2个分支选项，每个选项不超过20字：%s", desc)
+	req = TextGenerationRequest{
+		Input: Input{
+			Prompt: prompt,
+		},
+	}
+	return req
+}
+
+func NewBgPromptGenerationRequest(desc string) (req TextGenerationRequest) {
+	prompt := fmt.Sprintf("20个字描述以下剧情所处的风景，不要出现人物：%s", desc)
 	req = TextGenerationRequest{
 		Input: Input{
 			Prompt: prompt,

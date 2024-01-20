@@ -9,10 +9,11 @@ import (
 var cfg *ini.File
 
 type Server struct {
-	RunMode      string
-	HttpPort     int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	RunMode     string
+	HttpPort    string
+	Domain      string
+	AuthExpire  int
+	SceneExpire int
 }
 
 var ServerSetting = &Server{}
@@ -78,8 +79,8 @@ func Setup() {
 	mapTo("tencent-cloud", TencentCloudSetting)
 	mapTo("redis-mq", RedisMQSetting)
 
-	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
-	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
+	//ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
+	//ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
 	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second
 }
 
