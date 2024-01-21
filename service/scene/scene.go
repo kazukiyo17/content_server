@@ -154,7 +154,7 @@ func GenerateScene(sceneId, sceneInfo string) {
 	scene.ShortDesc = rawDesc
 	err = updateSceneAfterGenerate(scene)
 	if err != nil {
-		log.Fatalf("update scene failed. err: %v\n", err)
+		log.Printf("update scene failed. err: %v\n", err)
 		return
 	}
 	// 6. 写入子剧本

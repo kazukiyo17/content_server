@@ -24,7 +24,7 @@ func Setup() {
 		setting.DatabaseSetting.Name)
 	d, err := gorm.Open(mysql.Open(_dsn), &gorm.Config{SkipDefaultTransaction: true})
 	if err != nil {
-		log.Fatalf("models.Setup err: %v", err)
+		log.Printf("models.Setup err: %v", err)
 	}
 
 	sqlDB, err := d.DB()

@@ -61,7 +61,7 @@ func (c *Config) loadMysql() error {
 		setting.DatabaseSetting.Name)
 	db, err := gorm.Open(mysql.Open(_dsn), &gorm.Config{SkipDefaultTransaction: true})
 	if err != nil {
-		log.Fatalf("models.Setup err: %v", err)
+		log.Printf("models.Setup err: %v", err)
 	}
 	c.MysqlConn = db
 	return nil
