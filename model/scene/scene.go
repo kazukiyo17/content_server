@@ -6,7 +6,7 @@ import (
 
 type Scene struct {
 	model.Model
-	SceneId       int64  `json:"tag_id" gorm:"type:bigint;index"`
+	SceneId       int64  `json:"scene_id" gorm:"type:bigint;index"`
 	ChooseContent string `json:"choose_content" gorm:"type:varchar(255)"`
 	Creator       string `json:"creator" gorm:"type:varchar(255)"`
 	ParentSceneId int64  `json:"parent_scene_id" gorm:"type:bigint;index"`

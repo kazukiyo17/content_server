@@ -94,7 +94,9 @@ func updateSceneAfterGenerate(scene *model.Scene) error {
 func GenerateScene(sceneId, sceneInfo string) {
 	var scene = &model.Scene{}
 	err := json.Unmarshal([]byte(sceneInfo), &scene)
+	log.Printf("scene info: %v", scene)
 	if err != nil {
+		log.Printf("unmarshal scene info failed. err: %v", err)
 		return
 	}
 	parentId := scene.ParentSceneId
@@ -112,6 +114,7 @@ func GenerateScene(sceneId, sceneInfo string) {
 	descReq := dashscope.NewDescGenerationRequest(chooseContent, sceneDesc)
 	rawDesc, err := descReq.GenerateText()
 	if err != nil {
+		log.Printf("generate desc failed. err: %v", err)
 		return
 	}
 	// 3.2 生成背景
@@ -138,27 +141,9 @@ func GenerateScene(sceneId, sceneInfo string) {
 	}
 	// 3.4 解析
 	newSceneContent, chooses := processor.GenerateNewScene(rawText, bgUrl, rawChoose)
-	//newSceneContent, chooses, err := processor.GenerateSceneContent(rawText, sceneId)
-	//if err != nil {
-	//	log.Printf("generate scene content failed. err: %v", err)
-	//	return
-	//}
-	// 3.4 如果没有选择选项，重新生成
-	//if len(chooses) == 0 {
-	//	chooseReq := dashscope.NewChooseGenerationRequest(rawDesc)
-	//	rawChoose, err := chooseReq.GenerateText()
-	//	if err != nil {
-	//		log.Printf("generate choose failed. err: %v", err)
-	//		return
-	//	}
-	//	chooseStr, chooses:=processor.FormatChooseContent(rawChoose)
-	//	if len(chooses) == 0 {
-	//		chooseStr = conf.EndScene
-	//	}
-	//	newSceneContent = rawDesc + "\n" + chooseStr+";"
-	//}
 	cosUrl, err := cos.UploadScene(newSceneContent, sceneId)
 	if err != nil {
+		log.Printf("upload scene failed. err: %v", err)
 		return
 	}
 	// 5. 更新数据库
@@ -166,17 +151,17 @@ func GenerateScene(sceneId, sceneInfo string) {
 	scene.ShortDesc = rawDesc
 	err = updateSceneAfterGenerate(scene)
 	if err != nil {
+		log.Printf("update scene failed. err: %v", err)
 		return
 	}
 	// 6. 写入子剧本
-	//childSceneIds := make([]string, 0)
 	childScenes := make([]*model.Scene, 0)
 	for k, v := range chooses {
 		err, newScene := model.SaveUngeneratedScene(k, sceneIdInt, v, scene.Creator)
 		if err != nil {
+			log.Printf("save scene failed. err: %v", err)
 			continue
 		}
-		//childSceneIds = append(childSceneIds, k)
 		childScenes = append(childScenes, newScene)
 	}
 	jsonStr, err := json.Marshal(childScenes)
@@ -184,9 +169,6 @@ func GenerateScene(sceneId, sceneInfo string) {
 	if scene.IsInit != 0 {
 		redis.Set("init:" + scene.Creator + string(rune(scene.IsInit)), string(jsonStr), setting.ServerSetting.SceneExpire)
 	}
-	//redis.Set("child:"+chooseId, strings.Join(childSceneIds, ","))
-	//redis.Set("scene:"+chooseId, newSceneContent)
-	//redis.Set("cos:"+chooseId, cosUrl)
 	if err != nil {
 		return
 	}

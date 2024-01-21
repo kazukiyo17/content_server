@@ -4,6 +4,7 @@ import (
 	"content_server/setting"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"log"
 	"time"
 )
 
@@ -158,14 +159,13 @@ func (mqClient *RedisStreamMQClient) GetMsgBlock(streamKey string) ( msgMap map[
 	reply, err := redis.Values(conn.Do("XREAD",
 		"COUNT", 5, "BLOCK", 10*1000, "STREAMS", streamKey, "$"))
 	if err != nil && err != redis.ErrNil {
-		fmt.Println("BLOCK XREAD failed, err: ", err)
+		log.Printf("XREAD failed, err: %v", err)
 		return nil, err
 	}
 
 	//返回消息转换
 	//msgMap = mqClient.ConvertVecInterface(reply)
 	msgMap = mqClient.ConvertMap(reply)
-	fmt.Println("MsgMap:", msgMap)
 	return msgMap, nil
 }
 

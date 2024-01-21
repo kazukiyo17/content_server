@@ -24,13 +24,6 @@ func Consume() {
 			continue
 		}
 		for k, v := range msg {
-			//kInt, err := strconv.ParseInt(k, 10, 64)
-			//if err != nil {
-			//	continue
-			//}
-			//if hasGenerated(kInt) {
-			//	continue
-			//}
 			service.GenerateScene(k, v)
 		}
 	}
