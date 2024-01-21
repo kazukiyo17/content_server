@@ -84,7 +84,7 @@ func updateSceneAfterGenerate(scene *model.Scene) error {
 	redis.Set("desc:"+sceneId, scene.ShortDesc, setting.ServerSetting.SceneExpire)
 	jsonStr, err := json.Marshal(sceneInfo)
 	if err == nil {
-		log.Printf("jsonStr: %v", jsonStr)
+		log.Printf("jsonStr: %v", sceneInfo)
 		redis.Set("scene:"+sceneId, string(jsonStr), setting.ServerSetting.SceneExpire)
 		if scene.IsInit != 0 {
 			isInitStr := strconv.Itoa(scene.IsInit)

@@ -51,6 +51,7 @@ func Set(key string, data string, expire int) {
 		log.Printf("redis set expire error: %v", err)
 		return
 	}
+	log.Printf("redis set key: %v, value: %v", key, data)
 }
 
 // Exists check a key
@@ -73,8 +74,10 @@ func Get(key string) (string, error) {
 
 	reply, err := redis.Bytes(conn.Do("GET", key))
 	if err != nil {
+		log.Printf("redis get error: %v", err)
 		return "", err
 	}
+	log.Printf("redis get key: %v, value: %v", key, string(reply))
 
 	return string(reply), nil
 }
