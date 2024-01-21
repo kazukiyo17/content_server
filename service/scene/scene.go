@@ -71,6 +71,7 @@ func GetDescBySceneId(sceneId string) (desc string, err error) {
 
 func updateSceneAfterGenerate(scene *model.Scene) error {
 	sceneId := strconv.FormatInt(scene.SceneId, 10)
+	log.Printf("update scene: %v", scene)
 	err := model.UpdateSceneBySceneId(sceneId, scene)
 	if err != nil {
 		return err
@@ -83,6 +84,7 @@ func updateSceneAfterGenerate(scene *model.Scene) error {
 	redis.Set("desc:"+sceneId, scene.ShortDesc, setting.ServerSetting.SceneExpire)
 	jsonStr, err := json.Marshal(sceneInfo)
 	if err == nil {
+		log.Printf("jsonStr: %v", sceneInfo)
 		redis.Set("scene:"+sceneId, string(jsonStr), setting.ServerSetting.SceneExpire)
 		if scene.IsInit != 0 {
 			redis.Set("init:" + scene.Creator + string(rune(scene.IsInit)), string(jsonStr), setting.ServerSetting.SceneExpire)
@@ -151,7 +153,7 @@ func GenerateScene(sceneId, sceneInfo string) {
 	scene.ShortDesc = rawDesc
 	err = updateSceneAfterGenerate(scene)
 	if err != nil {
-		log.Printf("update scene failed. err: %v", err)
+		log.Fatalf("update scene failed. err: %v\n", err)
 		return
 	}
 	// 6. 写入子剧本
