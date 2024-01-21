@@ -24,6 +24,8 @@ func Consume() {
 			continue
 		}
 		for k, v := range msg {
+			fmt.Println("---------------------------------------------------")
+			fmt.Println("get msg:", k, v)
 			service.GenerateScene(k, v)
 		}
 	}
