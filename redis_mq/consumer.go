@@ -18,7 +18,7 @@ type ISceneMsgConsumer interface {
 func Consume() {
 	for {
 		// 取消息
-		msg, err3 := redisMQClient.GetMsgBlock(TEST_STREAM_KEY)
+		msg, err3 := redisMQClient.GetMsgByGroupConsumer(TEST_STREAM_KEY, TEST_GROUP_NAME, TEST_CONSUMER_NAME)
 		if err3 != nil {
 			fmt.Println("GetMsgByGroupConsumer Failed. err:", err3)
 			continue
