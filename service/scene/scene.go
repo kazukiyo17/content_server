@@ -84,10 +84,11 @@ func updateSceneAfterGenerate(scene *model.Scene) error {
 	redis.Set("desc:"+sceneId, scene.ShortDesc, setting.ServerSetting.SceneExpire)
 	jsonStr, err := json.Marshal(sceneInfo)
 	if err == nil {
-		log.Printf("jsonStr: %v", sceneInfo)
+		log.Printf("jsonStr: %v", jsonStr)
 		redis.Set("scene:"+sceneId, string(jsonStr), setting.ServerSetting.SceneExpire)
 		if scene.IsInit != 0 {
-			redis.Set("init:" + scene.Creator + string(rune(scene.IsInit)), string(jsonStr), setting.ServerSetting.SceneExpire)
+			isInitStr := strconv.Itoa(scene.IsInit)
+			redis.Set("init:" + scene.Creator + isInitStr, string(jsonStr), setting.ServerSetting.SceneExpire)
 		}
 	}
 	return nil
@@ -168,9 +169,9 @@ func GenerateScene(sceneId, sceneInfo string) {
 	}
 	jsonStr, err := json.Marshal(childScenes)
 	redis.Set("childs:"+sceneId, string(jsonStr), setting.ServerSetting.SceneExpire)
-	if scene.IsInit != 0 {
-		redis.Set("init:" + scene.Creator + string(rune(scene.IsInit)), string(jsonStr), setting.ServerSetting.SceneExpire)
-	}
+	//if scene.IsInit != 0 {
+	//	redis.Set("init:" + scene.Creator + string(rune(scene.IsInit)), string(jsonStr), setting.ServerSetting.SceneExpire)
+	//}
 	if err != nil {
 		return
 	}
